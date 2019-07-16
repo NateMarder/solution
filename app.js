@@ -1,12 +1,14 @@
 const storage = require('node-persist');
 const express = require('express');
+const bodyParser = require('body-parser');
 const path = require('path');
 const wargame = require('./game');
+const prime = require('./nthPrime');
+
 
 const app = express();
-
+app.use(bodyParser.json());
 app.use(express.static(__dirname));
-app.use('/public', express.static('public'));
 const WARPORT = 3000;
 
 app.listen(WARPORT, '127.0.0.1', async () => {
@@ -65,8 +67,27 @@ app.post('/game/:id/play', async (req, res) => {
 });
 
 /**
- * @description returns html file for tests
+ * @description for TESTS
  */
 app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname.concat('/testrunner.html')));
 });
+
+/**
+ * @description for NON-BLOCKING cpu intensive requests
+ */
+ app.get('/nthprime/:n', (req, res) => {
+  try {
+    const pathArray = req.path.split('/');
+    const n = pathArray[pathArray.length - 1];
+    console.log(`working on: ${n}`);
+    const p = prime.getNthPrime(parseInt(n));
+    res.send({
+      input: n,
+      output: p,
+    });
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+ });
