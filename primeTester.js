@@ -12,20 +12,8 @@ const primeNthLocations = [
 ];
 
 // non-blocking way
-// primeNthLocations.forEach((val, i) => {
-//   request.get(`http://localhost:3000/nthprimeasync/${val}`, function (error, response, body) {
-//     if (error || (!response)) {
-//       process.stdout.write(error || 'error happened');
-//     } else {
-//       process.stdout.write(body);
-//       process.stdout.write('\n');
-//     }
-//   });
-// });
-
-// blocking way
 primeNthLocations.forEach((val, i) => {
-  request.get(`http://localhost:3000/nthprime/${val}`, function (error, response, body) {
+  request.get(`http://localhost:3000/nthprimeasync/${val}`, function (error, response, body) {
     if (error || (!response)) {
       process.stdout.write(error || 'error happened');
     } else {
@@ -34,3 +22,15 @@ primeNthLocations.forEach((val, i) => {
     }
   });
 });
+
+// blocking way: uses an endpoint that doesn't spin up threads
+// primeNthLocations.forEach((val, i) => {
+//   request.get(`http://localhost:3000/nthprime/${val}`, function (error, response, body) {
+//     if (error || (!response)) {
+//       process.stdout.write(error || 'error happened');
+//     } else {
+//       process.stdout.write(body);
+//       process.stdout.write('\n');
+//     }
+//   });
+// });

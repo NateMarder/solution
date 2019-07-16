@@ -2,10 +2,10 @@ const storage = require('node-persist');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const wargame = require('./game');
-const prime = require('./nthPrime');
 const { spawn, Thread, Worker } = require('threads');
 
+const wargame = require('./game');
+const prime = require('./nthPrime');
 
 const app = express();
 app.use(bodyParser.json());
@@ -93,7 +93,6 @@ app.get('/nthprime/:n', (req, res) => {
   }
 });
 
-
 /**
  * @description for NON-BLOCKING cpu intensive requests
  * this strategy exposes a single function that lives within
@@ -119,7 +118,7 @@ app.get('/nthprimeasync/:n', async (req, res) => {
         throw new Error('fetchPrimeValue doesnt exist');
       };
     }, 0);
-    
+
   } catch (err) {
     console.error('a fetchPrime error happened:', err);
     res.sendStatus(500);
