@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const wargame = require('./game');
 const prime = require('./nthPrime');
+const { spawn, Thread, Worker } = require('threads');
 
 
 const app = express();
@@ -74,20 +75,53 @@ app.get('/', async (req, res) => {
 });
 
 /**
- * @description for NON-BLOCKING cpu intensive requests
+ * @description Method for exploring cpu intensive request strategies.
+ * Don't do it this way as the event loop will be certainly be blocked.
  */
- app.get('/nthprime/:n', (req, res) => {
+app.get('/nthprime/:n', (req, res) => {
   try {
     const pathArray = req.path.split('/');
     const n = pathArray[pathArray.length - 1];
-    console.log(`working on: ${n}`);
     const p = prime.getNthPrime(parseInt(n));
     res.send({
-      input: n,
+      n,
       output: p,
     });
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
   }
- });
+});
+
+
+/**
+ * @description for NON-BLOCKING cpu intensive requests
+ * this strategy exposes a single function that lives within
+ * a distinct thread which executes the the thread and returns
+ * the result asynchronously. See 
+ * https://threads.js.org/usage#function-thread for more info.
+ */
+app.get('/nthprimeasync/:n', async (req, res) => {
+  try {
+    const pathArray = req.path.split('/');
+    const n = pathArray[pathArray.length - 1];
+    const fetchPrimeValue = await spawn(new Worker(path.join('/workers/findPrime')));
+    const primeVal = await fetchPrimeValue(parseInt(n));
+    res.send({
+      n,
+      output: primeVal,
+    });
+
+    setTimeout(() => {
+      if (fetchPrimeValue) {
+        Thread.terminate(fetchPrimeValue);
+      } else {
+        throw new Error('fetchPrimeValue doesnt exist');
+      };
+    }, 0);
+    
+  } catch (err) {
+    console.error('a fetchPrime error happened:', err);
+    res.sendStatus(500);
+  } 
+});
