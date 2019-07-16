@@ -63,3 +63,10 @@ app.post('/game/:id/play', async (req, res) => {
     },
   });
 });
+
+/**
+ * @description returns html file for tests
+ */
+app.get('/', async (req, res) => {
+  res.sendFile(path.join(__dirname.concat('/testrunner.html')));
+});
